@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 #include "Socketfd.h"
 using namespace std;
 

@@ -1,4 +1,6 @@
 #include <vector>
+#include <iostream>
+using namespace std;
 
 class SocketInode{
     public:
@@ -14,5 +16,5 @@ class Socketfd{
         Socketfd();
         SocketInode* root;
         
-        void insert(unsigned int, unsigned int);
+        void insert(string socketfd, unsigned int pid);
 };
