@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <string.h>
+#include <string>
 #include <ctype.h>
 #include "Socketfd.h"
 using namespace std;
@@ -12,7 +12,7 @@ using namespace std;
 class Processes{
     public:
         const string PATH;
-        Socketfd socketfd;
+        Socketfd* socketfd;
 
         Processes();
 };

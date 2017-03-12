@@ -1,6 +1,9 @@
 #include "Processes.h"
 
 Processes::Processes() : PATH("/proc"){
+
+    socketfd = new Socketfd();
+
     DIR *pDir;
     dirent* pDirent;
     pDir = opendir(PATH.c_str());
@@ -26,11 +29,18 @@ Processes::Processes() : PATH("/proc"){
             if(len!=-1){
                 buff[len] = '\0';
                 string type = string(buff).substr(0, 6);
-                if(type == "socket")
+                if(type == "socket"){
+                    string inode = string(buff+8);
+                    inode.erase(inode.length()-1);
+                    cout << inode << endl;
                     printf ("\t[%s] -> [%s]\n", fdDirent->d_name, buff);
+                    socketfd->insert(inode, atoi(pDirent->d_name));
+                }
             }
             
         }
+
     }
+    socketfd->traverse(socketfd->root);
     
 }

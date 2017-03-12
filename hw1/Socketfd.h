@@ -1,13 +1,14 @@
 #include <vector>
 #include <iostream>
+#include <string>
 using namespace std;
 
 class SocketInode{
     public:
-
+        SocketInode();
         unsigned int count;
         char* cmdline;
-        unsigned int pid;
+        int pid;
         SocketInode* trie[10];
 };
 
@@ -16,5 +17,9 @@ class Socketfd{
         Socketfd();
         SocketInode* root;
         
-        void insert(string socketfd, unsigned int pid);
+        void insert(string socketfd, int pid);
+        void traverse(SocketInode* current);
+
+    private:
+        string inode;
 };

@@ -15,3 +15,6 @@ $(EXECUTABLE): $(OBJECTS)
 
 run:
 	./$(EXECUTABLE)
+
+clean: 
+	rm -f $(OBJECTS)
