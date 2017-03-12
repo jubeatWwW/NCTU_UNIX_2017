@@ -4,7 +4,9 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <string>
+#include <string.h>
 #include <ctype.h>
+#include <fstream>
 #include "Socketfd.h"
 using namespace std;
 
@@ -15,4 +17,6 @@ class Processes{
         Socketfd* socketfd;
 
         Processes();
+    private:
+        void BuildSocketTrie();
 };

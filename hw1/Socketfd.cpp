@@ -5,8 +5,7 @@ Socketfd::Socketfd(){
     inode = "";
 }
 
-void Socketfd::insert(string socketfd, int pid){
-    cout << socketfd << "  " << pid << endl;
+void Socketfd::insert(string socketfd, int pid, char* cmdline){
     SocketInode* current = root;
     for(unsigned i=0; i< socketfd.length(); i++){
         unsigned num = socketfd[i] - '0';
@@ -18,6 +17,7 @@ void Socketfd::insert(string socketfd, int pid){
 
     current->count++;
     current->pid = pid;
+    current->cmdline = cmdline;
 }
 
 void Socketfd::traverse(SocketInode* current){
@@ -29,8 +29,9 @@ void Socketfd::traverse(SocketInode* current){
         if(NULL != current->trie[i]){
             inode += i+'0';
             if(-1 != current->trie[i]->pid){
-                cout << inode << endl;
+                cout << "inode: " << inode << endl;
                 cout <<"pid: " << current->trie[i]->pid << endl;
+                cout << "cmd: " << current->trie[i]->cmdline << endl;
             }
             
             traverse(current->trie[i]);

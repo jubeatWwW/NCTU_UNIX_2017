@@ -3,7 +3,10 @@
 Processes::Processes() : PATH("/proc"){
 
     socketfd = new Socketfd();
+    BuildSocketTrie();
+}
 
+void Processes::BuildSocketTrie(){
     DIR *pDir;
     dirent* pDirent;
     pDir = opendir(PATH.c_str());
@@ -13,6 +16,19 @@ Processes::Processes() : PATH("/proc"){
             continue;
 
         printf ("[%s]\n", pDirent->d_name);
+        
+        string cmdlinePath = PATH + "/" + string(pDirent->d_name) + "/cmdline";
+        char cmd[1024];
+        char* cmdline;
+        FILE *fptr = fopen(cmdlinePath.c_str(), "r");
+        if(fptr){
+            while(fgets(cmd, 1024, fptr) != NULL){
+                cout << cmd;
+                cmdline = strdup(cmd);
+                break;
+            }
+        }
+
 
         string fdPath = PATH + "/" + string(pDirent->d_name) + "/fd";
         cout << fdPath << endl;
@@ -32,15 +48,11 @@ Processes::Processes() : PATH("/proc"){
                 if(type == "socket"){
                     string inode = string(buff+8);
                     inode.erase(inode.length()-1);
-                    cout << inode << endl;
                     printf ("\t[%s] -> [%s]\n", fdDirent->d_name, buff);
-                    socketfd->insert(inode, atoi(pDirent->d_name));
+                    socketfd->insert(inode, atoi(pDirent->d_name), cmdline);
                 }
             }
-            
         }
-
     }
-    socketfd->traverse(socketfd->root);
-    
+    //socketfd->traverse(socketfd->root);
 }
