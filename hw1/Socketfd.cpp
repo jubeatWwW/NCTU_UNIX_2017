@@ -5,8 +5,7 @@ Socketfd::Socketfd(){
     inode = "";
 }
 
-void Socketfd::insert(string socketfd, int pid, char* cmdline){
-    cout << "insert" << endl;
+void Socketfd::insert(string socketfd, long pid, char* cmdline){
     SocketInode* current = root;
     for(unsigned i=0; i< socketfd.length(); i++){
         unsigned num = socketfd[i] - '0';
@@ -15,7 +14,7 @@ void Socketfd::insert(string socketfd, int pid, char* cmdline){
         }
         current = current->trie[num];
     }
-
+    
     current->count++;
     current->pid = pid;
     current->cmdline = cmdline;

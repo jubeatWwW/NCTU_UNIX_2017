@@ -8,7 +8,7 @@ class SocketInode{
         SocketInode();
         unsigned int count;
         char* cmdline;
-        int pid;
+        long pid;
         SocketInode* trie[10];
 };
 
@@ -17,7 +17,7 @@ class Socketfd{
         Socketfd();
         SocketInode* root;
         
-        void insert(string socketfd, int pid, char* cmdline);
+        void insert(string socketfd, long pid, char* cmdline);
         SocketInode* search(char* inode);
         void traverse(SocketInode* current);
 
