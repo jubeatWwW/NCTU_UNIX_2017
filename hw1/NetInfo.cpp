@@ -60,13 +60,16 @@ void NetInfo::GetRecord(int type){
 }
 
 void NetInfo::show(){
+    string* typeName = new string[4] {"tcp", "tcp6", "udp", "udp6"};
     for(Record* record : records){
-        cout << record->localAddr << setw(16);
-        cout << record->remoteAddr << setw(16);
+        int typeStrNum = log(record->protocolType)/log(2); 
+        cout << left << setw(8) << typeName[typeStrNum];
+
+        cout << left << setw(32) << record->localAddr << left << setw(32) << record->remoteAddr;
         if(-1 == record->pid)
-            cout << "-" << endl;
+            cout << left << "-" << endl;
         else
-            cout << record->pid << "/" << record->cmdline << endl;
+            cout << left <<record->pid << "/" << record->cmdline << right << endl;
     }
 }
 
