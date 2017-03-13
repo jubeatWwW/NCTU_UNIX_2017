@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Processes.h"
+#include "NetInfo.h"
 using namespace std;
 
 int main(int argc, char *argv[]){
-    Processes *processes = new Processes();
+    
+    NetInfo *netinfo = new NetInfo();
+
 }

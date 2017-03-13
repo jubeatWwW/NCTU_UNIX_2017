@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=netstat.cpp Processes.cpp Socketfd.cpp
+SOURCES=netstat.cpp Processes.cpp Socketfd.cpp NetInfo.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=netstat
 

@@ -56,3 +56,7 @@ void Processes::BuildSocketTrie(){
     }
     //socketfd->traverse(socketfd->root);
 }
+
+SocketInode* Processes::search(char* inode){
+    return socketfd->search(inode);
+}

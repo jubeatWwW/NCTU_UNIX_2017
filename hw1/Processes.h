@@ -17,6 +17,8 @@ class Processes{
         Socketfd* socketfd;
 
         Processes();
+        SocketInode* search(char* inode);
+
     private:
         void BuildSocketTrie();
 };

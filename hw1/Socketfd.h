@@ -18,6 +18,7 @@ class Socketfd{
         SocketInode* root;
         
         void insert(string socketfd, int pid, char* cmdline);
+        SocketInode* search(char* inode);
         void traverse(SocketInode* current);
 
     private:
