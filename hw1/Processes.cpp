@@ -11,6 +11,11 @@ void Processes::BuildSocketTrie(){
     dirent* pDirent;
     pDir = opendir(PATH.c_str());
 
+    if(NULL == pDir){
+        printf("Cannot open dir\n");
+        exit(1);
+    }
+
     while((pDirent = readdir(pDir)) != NULL){
         if(!isdigit(*pDirent->d_name))
             continue;
@@ -34,6 +39,11 @@ void Processes::BuildSocketTrie(){
         //cout << fdPath << endl;
         dirent* fdDirent;
         DIR* fdDir = opendir(fdPath.c_str());
+        
+        if(NULL == fdDir){
+            printf("Cannot open dir\n");
+            exit(1);
+        }
 
         while((fdDirent = readdir(fdDir)) != NULL){
             if(!isdigit(*fdDirent->d_name))
@@ -55,7 +65,11 @@ void Processes::BuildSocketTrie(){
                 }
             }
         }
+
+        closedir(fdDir);
     }
+
+    closedir(pDir);
     //socketfd->traverse(socketfd->root);
 }
 

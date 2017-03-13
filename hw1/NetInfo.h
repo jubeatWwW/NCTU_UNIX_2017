@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <string.h>
 #include <vector>
@@ -39,4 +40,5 @@ class NetInfo{
         void show();
     private:
         int type;
+        void GetRecord(int type);
 };

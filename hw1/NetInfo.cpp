@@ -4,22 +4,35 @@ const int PROTOCOL[4] = {1, 2, 4, 8};
 
 NetInfo::NetInfo() : CHROOT("/proc/net/"){
     processes = new Processes();
-    type = 15;
+    this->type = 15;
+    GetRecord(type);
+}
 
-    string* type = new string[4] {"tcp", "tcp6", "udp", "udp6"};
+NetInfo::NetInfo(int type): CHROOT("/proc/net/"){
+    processes = new Processes();
+    this->type = type;
+    GetRecord(type);
+}
 
-    for(int i=0; i<4; i++){
-        string path = CHROOT + type[i];
-        cout << "type: " << path << endl;
+void NetInfo::GetRecord(int type){
+    string* typeName = new string[4] {"tcp", "tcp6", "udp", "udp6"};
+    
+    int begin = 0, end = 3;
+
+    if(~type&(TCP|TCP6))  begin = 2;
+    if(~type&(UDP|UDP6))  end = 1;
+    while(begin <= end){
+        string path = CHROOT + typeName[begin];
         FILE* fptr = fopen(path.c_str(), "r");
         char line[1024];
-        fgets(line, 1024, fptr);
+        if(fptr)
+            fgets(line, 1024, fptr);
         while(fgets(line, 1024, fptr) != NULL){
             //cout << line << endl;
-            char token[64];
+            char token[65];
             int ptr = 0, pos = 0, cnt = 0;
 
-            Record* record = new Record(PROTOCOL[i]);
+            Record* record = new Record(PROTOCOL[begin]);
 
             while(1 == sscanf(line + ptr, "%64s%n", token, &pos)){
                 ptr += pos;
@@ -41,13 +54,15 @@ NetInfo::NetInfo() : CHROOT("/proc/net/"){
             records.push_back(record);
         }
         fclose(fptr);
+        begin++;
     }
+    
 }
 
 void NetInfo::show(){
     for(Record* record : records){
-        cout << record->localAddr << "\t";
-        cout << record->remoteAddr << "\t";
+        cout << record->localAddr << setw(16);
+        cout << record->remoteAddr << setw(16);
         if(-1 == record->pid)
             cout << "-" << endl;
         else
@@ -55,8 +70,6 @@ void NetInfo::show(){
     }
 }
 
-NetInfo::NetInfo(int type){
-}
 
 Record::Record(int type){
     protocolType = type;

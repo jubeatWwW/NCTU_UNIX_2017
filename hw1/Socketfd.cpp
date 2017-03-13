@@ -14,7 +14,6 @@ void Socketfd::insert(string socketfd, long pid, char* cmdline){
         }
         current = current->trie[num];
     }
-    
     current->count++;
     current->pid = pid;
     current->cmdline = cmdline;
@@ -47,7 +46,7 @@ SocketInode* Socketfd::search(char* inode){
     while('\0' != *inode){
         unsigned int num = *inode - '0';
         if(NULL == current->trie[num]){
-            cout << "cannot found inode" << endl;
+            //cout << "cannot found inode" << endl;
             break;
         }
 
@@ -61,4 +60,7 @@ SocketInode* Socketfd::search(char* inode){
 SocketInode::SocketInode(){
     count = 0;
     pid = -1;
+    for(int i=0;i<10;i++){
+        trie[i] = NULL;
+    }
 }
