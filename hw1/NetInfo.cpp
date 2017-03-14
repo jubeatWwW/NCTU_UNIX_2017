@@ -171,26 +171,58 @@ string Record::AddrConvert(char* addr, int type){
         return ip;
     } else {
         for(int i=0; i<4; i++){
-            bool flag = false;
             string subip = "";
             for(int j=0; j<4; j++){
                 char part[3] = {*addr, *(addr+1), '\0'};
-                if('0' != *addr || '0' != *(addr+1))
-                    flag = true;
                 subip = string(part) + subip;
                 addr+=2;
             }
-            if(flag)
-                ip += subip+":";
-            else
-                ip += ":";
+            ip += subip;
+        }
+        
+        string shortip = "";
+        bool isFirst = true;
+        int zCnt = 0;
+        for(int i=0; i<8; i++){
+            string subip = "";
+            bool allz = true;
+            for(int j=0; j<4; j++){
+                if('0' != ip[i*4 + j]){
+                    subip += ip[i*4 + j];
+                    allz = false;
+                }
+            }
+
+            if(allz){
+                zCnt++;
+                if(!isFirst) 
+                    shortip += "0:";
+            } else {
+                if(isFirst && 2 <= zCnt){
+                    shortip += "::" + subip + ":";
+                    isFirst = false;
+                } else if(isFirst && 1 == zCnt){
+                    shortip += "0:" + subip + ":";
+                } else {
+                    shortip += subip + ":";
+                }
+                zCnt = 0;
+            }
+        }
+
+        if(isFirst) 
+            shortip = ":::";
+        else if(zCnt > 0){
+            while(zCnt--){
+                shortip += "0:";
+            }
         }
         
         addr++;
         long port = strtoul(addr, NULL, 16);
-        ip += 0==port ? "*" : to_string(port);
+        shortip += 0==port ? "*" : to_string(port);
         //cout << ip << endl;
-        return ip;
+        return shortip;
         
     }
 
