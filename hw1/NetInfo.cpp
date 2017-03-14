@@ -61,17 +61,86 @@ void NetInfo::GetRecord(int type){
 
 void NetInfo::show(){
     string* typeName = new string[4] {"tcp", "tcp6", "udp", "udp6"};
-    for(Record* record : records){
-        int typeStrNum = log(record->protocolType)/log(2); 
-        cout << left << setw(8) << typeName[typeStrNum];
+    bool tcpflag = false, udpflag = false;
 
-        cout << left << setw(32) << record->localAddr << left << setw(32) << record->remoteAddr;
+    for(Record* record : records){
+        if(!tcpflag && (record->protocolType&(TCP|TCP6))){
+            cout << endl << "List of TCP connections:" << endl;
+            cout << left << setw(8) << "Proto";
+            cout << left << setw(32) << "Local Address" << left << setw(32) << "Foreign Address";
+            cout << left << "PID/Program name and arguments" << right << endl;
+            tcpflag = true;
+        }
+        if(!udpflag && (record->protocolType&(UDP|UDP6))){
+            cout << endl << "List of UDP connections:" << endl;
+            cout << left << setw(8) << "Proto";
+            cout << left << setw(32) << "Local Address" << left << setw(32) << "Foreign Address";
+            cout << left << "PID/Program name and arguments" << right << endl;
+            udpflag =true;
+        }
+        int typeStrNum = log(record->protocolType)/log(2);
+
+        stringstream buffer;
+
+        buffer << left << setw(8) << typeName[typeStrNum];
+
+        buffer << left << setw(32) << record->localAddr << left << setw(32) << record->remoteAddr;
         if(-1 == record->pid)
-            cout << left << "-" << endl;
+            buffer << left << "-" << endl;
         else
-            cout << left <<record->pid << "/" << record->cmdline << right << endl;
+            buffer << left <<record->pid << "/" << record->cmdline << right << endl;
+        cout << buffer.str();   
     }
 }
+
+void NetInfo::show(vector<string> filter){
+    string* typeName = new string[4] {"tcp", "tcp6", "udp", "udp6"};
+    bool tcpflag = false, udpflag = false;
+    
+    for(Record* record : records){
+        
+        int typeStrNum = log(record->protocolType)/log(2);
+        
+        stringstream buffer;
+
+        buffer << left << setw(8) << typeName[typeStrNum];
+
+        buffer << left << setw(32) << record->localAddr << left << setw(32) << record->remoteAddr;
+        if(-1 == record->pid)
+            buffer << left << "-" << endl;
+        else
+            buffer << left <<record->pid << "/" << record->cmdline << right << endl;
+        
+        bool match = true;
+        for(unsigned i=0; i<filter.size(); i++){
+            regex re(filter[i]);
+            if(regex_search(buffer.str().c_str(), re)){
+                //cout << "Match" << endl;
+            } else {
+                match = false;
+            }
+        }
+
+        if(!match) continue;
+
+        if(!tcpflag && (record->protocolType&(TCP|TCP6))){
+            cout << endl << "List of TCP connections:" << endl;
+            cout << left << setw(8) << "Proto";
+            cout << left << setw(32) << "Local Address" << left << setw(32) << "Foreign Address";
+            cout << left << "PID/Program name and arguments" << right << endl;
+            tcpflag = true;
+        }
+        if(!udpflag && (record->protocolType&(UDP|UDP6))){
+            cout << endl << "List of UDP connections:" << endl;
+            cout << left << setw(8) << "Proto";
+            cout << left << setw(32) << "Local Address" << left << setw(32) << "Foreign Address";
+            cout << left << "PID/Program name and arguments" << right << endl;
+            udpflag =true;
+        }
+        cout << buffer.str();   
+    }
+}
+
 
 
 Record::Record(int type){

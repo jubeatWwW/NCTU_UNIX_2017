@@ -26,11 +26,25 @@ int main(int argc, char **argv){
                 break;
         }
     }
+    
 
     if(!type) type = 15;
     
     NetInfo *netinfo = new NetInfo(type);
-    netinfo->show();
+
+    vector<string> filter;
+    int filterNum = argc - optind;
+    
+    if(0 < filterNum){
+        for(int i=0; i<filterNum; i++){
+            filter.push_back(string(argv[optind++]));
+        }
+
+        netinfo->show(filter);
+    } else {
+        netinfo->show();
+    }
+
     
     return 0;
 }

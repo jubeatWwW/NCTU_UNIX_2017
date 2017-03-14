@@ -3,9 +3,11 @@
 #include <math.h>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <string>
 #include <string.h>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -39,6 +41,7 @@ class NetInfo{
         vector<Record*> records;
         Processes *processes;
         void show();
+        void show(vector<string> filter);
     private:
         int type;
         void GetRecord(int type);
