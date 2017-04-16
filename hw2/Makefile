@@ -1,5 +1,4 @@
 all:
-	gcc -o getuid -Wall -g getuid.c
 	gcc -o inject1.so -shared -fPIC inject1.c -ldl
 
 test:
