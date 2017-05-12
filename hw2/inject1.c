@@ -21,22 +21,30 @@
         
 
 #define PRINT(FUNC, FORMAT, RET, RETTYPE, ...) \
-    if(NULL == old_##FUNC) \
+    if(NULL == old_##FUNC){ \
         fprintf(stderr, #FUNC " is down\n"); \
-    else { \
-        RETTYPE tmp = old_##FUNC(__VA_ARGS__); \
-        fprintf(stderr, "[monitor] " #FUNC #FORMAT " = " #RET "\n", __VA_ARGS__, tmp); \
-        return tmp; \
-    }
+        HijackInit(); \
+    } \
+    RETTYPE tmp = old_##FUNC(__VA_ARGS__); \
+    fprintf(stderr, "[monitor] " #FUNC #FORMAT " = " #RET "\n", __VA_ARGS__, tmp); \
+    return tmp; 
 
 #define PRINT_NO_ARGS(FUNC, RET, RETTYPE) \
+    if(NULL == old_##FUNC){ \
+        fprintf(stderr, #FUNC " is down\n"); \
+        HijackInit(); \
+    } \
     RETTYPE tmp = old_##FUNC(); \
     fprintf(stderr, "[monitor] " #FUNC "() = " #RET "\n", tmp); \
     return tmp;
 
 #define PRINT_RET_VOID(FUNC, FORMAT, ...) \
-    fprintf(stderr, "[monitor] " #FUNC #FORMAT "\n", __VA_ARGS__); \
-    FUNC(__VA_ARGS__);
+    if(NULL == old_##FUNC){ \
+        fprintf(stderr, #FUNC " is down\n"); \
+        HijackInit(); \
+    } \
+    FUNC(__VA_ARGS__); \
+    fprintf(stderr, "[monitor] " #FUNC #FORMAT "\n", __VA_ARGS__);
 
 
 DECLARE(int,            closedir,   DIR*);
@@ -121,7 +129,16 @@ DECLARE(int,            mkfifo,     const char*, mode_t);
 DECLARE(int,            stat,       const char*, struct stat*);
 DECLARE(mode_t,         umask,      mode_t);
 
+DECLARE(void*,          malloc,     size_t);
+DECLARE(void*,          calloc,     size_t, size_t);
+DECLARE(void*,          realloc,    void*, size_t);
+DECLARE(void,           free,       void*);
+
+
 __attribute__((constructor)) void HijackInit() {
+    static int called = 0;
+    if (called) return;
+    called = 1;
     void *handle = dlopen("libc.so.6", RTLD_LAZY);
 
     if(NULL != handle){
@@ -134,6 +151,11 @@ __attribute__((constructor)) void HijackInit() {
         DLSYM8(getuid, link, pipe, pread, pwrite, read, readlink, rmdir);
         DLSYM8(setegid, seteuid, setgid, setuid, sleep, symlink, unlink, write);
         DLSYM8(chmod, fchmod, fstat, lstat, mkdir, mkfifo, stat, umask);
+        
+        DLSYM(malloc);
+        DLSYM(calloc);
+        DLSYM(realloc);
+        DLSYM(free);
     }
 
     fprintf(stderr, "end dlopen\n");
@@ -205,8 +227,8 @@ char* tmpnam(char *s){
     PRINT(tmpnam, ('%s'), '%s', char*, s);
 }
 
-void exit(int status){
-    PRINT_RET_VOID(exit, %d, status);
+__attribute__((noreturn)) void exit(int status){
+    old_exit(status);
 }
 
 char* getenv(const char* name){
@@ -265,6 +287,22 @@ int dup2(int oldfd, int newfd){
     PRINT(dup2, (%d, %d), %d, int, oldfd, newfd);
 }
 
+//DLSYM8(_exit, execl, execle, execlp, execv, execve, execvp, fchdir);
+void _exit(int status){
+    old__exit(status);
+}
+
+int execv(const char *path, char *const argv[]){
+    PRINT(execv, ('%s', %p), %d, int, path, argv);
+}
+
+int execvp(const char *file, char *const argv[]){
+    PRINT(execvp, ('%s', %p), %d, int, file, argv);
+}
+
+int fchdir(int fd){
+    PRINT(fchdir, (%d), %d, int, fd);
+}
 
 //DLSYM8(fchown, fork, fsync, ftruncate, getcwd, getegid, geteuid, getgid);
 int fchown(int fd, uid_t owner, gid_t group){
@@ -387,4 +425,18 @@ int mkfifo(const char *pathname, mode_t mode){
 
 mode_t umask(mode_t mask){
     PRINT(umask, (%d), %d, mode_t, mask);
+}
+
+/*void *malloc(size_t size){
+    PRINT(malloc, (%lu), %p, void*, size);
+}
+void free(void *ptr){
+    PRINT_RET_VOID(free, (%p), ptr);
+}
+void *calloc(size_t nmemb, size_t size){
+    PRINT(calloc, (%lu, %lu), %p, void*, nmemb, size);
+}
+*/
+void *realloc(void *ptr, size_t size){
+    PRINT(realloc, (%p, %lu), %p, void*, ptr, size);
 }
