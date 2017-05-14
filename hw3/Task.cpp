@@ -31,7 +31,7 @@ void Task::_parseToArgv(string cmd){
     this->cmdArgv = argv;
 }
 
-void Task::execute(unsigned stddir, int (&pipefdIn)[2], int (&pipefdOut)[2]){
+void Task::execute(unsigned stddir, int pipefdIn[2], int pipefdOut[2]){
     /*for(char* s : argv){
         printf("argv: %s\n", s);
     }*/
@@ -39,17 +39,11 @@ void Task::execute(unsigned stddir, int (&pipefdIn)[2], int (&pipefdOut)[2]){
 
     int status;
     pid_t pid;
-
-    //printf("this is %s\n", this->cmdArgv[0]);
     
-    if(pipe(pipefdOut) < 0)
-        printf("pipe err\n");
-
     if(stddir&PIPEIN){
-        printf("pipe in\n");
         close(pipefdIn[PIPEWT]);
         if(dup2(pipefdIn[PIPERD], STDIN_FILENO) < 0){
-            printf("dup in err\n");
+            printf("dup2 in failed\n");
         }
         close(pipefdIn[PIPERD]);
     }
@@ -58,15 +52,13 @@ void Task::execute(unsigned stddir, int (&pipefdIn)[2], int (&pipefdOut)[2]){
         printf("ERROR fork\n");
         exit(1);       
     } else if(0 == pid){
-
+        
         if(stddir&PIPEOUT){
-            printf("pipe out\n");
             close(pipefdOut[PIPERD]);
             if(dup2(pipefdOut[PIPEWT], STDOUT_FILENO) < 0){
-                printf("dup out err\n");
+                printf("dup2 out failed\n");
             }
-            close(pipefdOut[PIPEWT]);
-        }
+        }       
 
         if(execvp(this->cmdArgv[0], this->cmdArgv.data()) < 0){
             printf("ERROR execvp\n");
@@ -74,13 +66,6 @@ void Task::execute(unsigned stddir, int (&pipefdIn)[2], int (&pipefdOut)[2]){
         }
     } else {
         waitpid(-1, &status, WUNTRACED|WCONTINUED);
-        if(WIFSTOPPED(status)){
-            printf("sig stopped\n");
-        } else if(WIFEXITED(status)){
-            printf("sig exited\n");
-        } else {
-            printf("sig unknown\n");
-        }
     }
 }
 

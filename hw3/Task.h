@@ -23,7 +23,7 @@ class Task{
         Task(string cmd);
         string cmd;
         vector<char*> cmdArgv;
-        void execute(unsigned stddir, int (&pipefdIn)[2], int (&pipefdOut)[2]);
+        void execute(unsigned stddir, int pipefdIn[2], int pipefdOut[2]);
     private:
         void _parseToArgv(string cmd);
 };

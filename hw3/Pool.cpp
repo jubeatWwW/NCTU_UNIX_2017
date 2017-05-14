@@ -40,30 +40,65 @@ void Pool::execute(){
     int pipefd2[2];
     bool isfirst = true;
     bool checkbit = true;
+    char buffer[1024];
+    int len = 0;
 
     while(!tasks.empty()){
-
-        if(isfirst){
-            if(1 == tasks.size())
-                tasks.front().execute(0, pipefd1, pipefd2);
-            else
-                tasks.front().execute(PIPEOUT, pipefd1, pipefd2);
-            isfirst = false;
-        } else {
-            int direct = (1 == tasks.size())? PIPEIN : PIPEIN|PIPEOUT;
-
-            if(checkbit)
-                tasks.front().execute(direct, pipefd1, pipefd2);
-            else
-                tasks.front().execute(direct, pipefd2, pipefd1);
+        if(pipe(pipefd2) < 0){
+            perror("pipe fd2 err\n");
         }
         
-        checkbit ^= true;
-        tasks.pop();
-    }
+        pid_t pid;
+        int status;
 
-    close(pipefd1[0]);
-    close(pipefd1[1]);
-    close(pipefd2[0]);
-    close(pipefd2[1]);
+        if((pid = fork()) < 0){
+            perror("fork err");
+        } else if(0 == pid){
+            if(isfirst && 1 == tasks.size()){
+                if(execvp(tasks.front().cmdArgv[0], tasks.front().cmdArgv.data()) < 0){
+                    perror("exec err");
+                    _exit(1);
+                }
+            } else {
+
+                close(pipefd2[PIPERD]);
+
+                if(!isfirst){
+                    if(dup2(pipefd1[PIPERD], STDIN_FILENO) < 0)
+                        perror("dup2 err");
+                    close(pipefd1[PIPERD]);
+                }
+
+                if(1 < tasks.size()){
+                    if(dup2(pipefd2[PIPEWT], STDOUT_FILENO) < 0)
+                        perror("dup2 err");
+                    close(pipefd2[PIPEWT]);
+                }
+                
+                if(execvp(tasks.front().cmdArgv[0], tasks.front().cmdArgv.data()) < 0){
+                    perror("exec err");
+                    _exit(1);
+                }
+            }
+        } else {
+            waitpid(pid, &status, WUNTRACED|WCONTINUED);
+            
+            close(pipefd2[PIPEWT]);
+            close(pipefd1[PIPERD]);
+
+            pipefd1[PIPEWT] = pipefd2[PIPEWT];
+            pipefd1[PIPERD] = pipefd2[PIPERD];
+            
+            if(WIFSTOPPED(status)){
+                printf("sig stopped\n");
+            } else if(WIFEXITED(status)){
+                printf("sig exited\n");
+            } else {
+                printf("sig unknown\n");
+            }
+            
+            isfirst = false;
+            tasks.pop();
+        }
+    }
 }

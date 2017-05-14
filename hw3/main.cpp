@@ -18,14 +18,14 @@ int main(){
  
     signal(SIGTSTP, SIG_IGN);   
 
+    char cmdline[1024];
     printf("jsh >> ");
-    int i[2]= {0, 0};
-    for(string cmdline; getline(cin, cmdline);){
-        
+    while(fgets(cmdline, 1024, stdin) != NULL){    
         Pool* pool = new Pool(cmdline);
         pool->execute();
+        printf("%s", cmdline);
         printf("jsh >> ");
     }
-    
+    printf("WTF\n");
     return 0;
 }
