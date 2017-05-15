@@ -1,6 +1,25 @@
 #include "Task.h"
 
 Task::Task(string cmd){
+    this->error = false;
+    this->pipedir = 0;
+    this->filedir = 0;
+    this->cmd = cmd;
+    this->_parseToArgv(cmd);
+}
+
+Task::Task(string cmd, unsigned pipedir){
+    this->error = false;
+    this->pipedir = pipedir;
+    this->filedir = 0;
+    this->cmd = cmd;
+    this->_parseToArgv(cmd);
+}
+
+Task::Task(string cmd, unsigned pipedir, unsigned filedir){
+    this->error = false;
+    this->pipedir = pipedir;
+    this->filedir = filedir;
     this->cmd = cmd;
     this->_parseToArgv(cmd);
 }
@@ -18,6 +37,31 @@ void Task::_parseToArgv(string cmd){
 
     for(int i=0; i<arg.size(); i++){
         char* str = (char*)malloc(1024 * sizeof(char));
+        
+        if("<" == arg[i]){
+            this->filedir |= FILEIN;
+            if(arg.size() > i+1){
+                this->inputName = arg[i+1];
+                i++;
+                continue;
+            } else {
+                this->error = true;
+                break;
+            }
+        }
+
+        if(">" == arg[i]){
+            this->filedir |= FILEOUT;
+            if(arg.size() > i+1){
+                this->outputName = arg[i+1];
+                i++;
+                continue;
+            } else {
+                this->error = true;
+                break;
+            }
+        }
+
         int j;
         for(j=0; j<arg[i].length(); j++){
             str[j] = arg[i][j];
@@ -29,43 +73,5 @@ void Task::_parseToArgv(string cmd){
     argv.push_back((char*)0);
 
     this->cmdArgv = argv;
-}
-
-void Task::execute(unsigned stddir, int pipefdIn[2], int pipefdOut[2]){
-    /*for(char* s : argv){
-        printf("argv: %s\n", s);
-    }*/
-
-
-    int status;
-    pid_t pid;
-    
-    if(stddir&PIPEIN){
-        close(pipefdIn[PIPEWT]);
-        if(dup2(pipefdIn[PIPERD], STDIN_FILENO) < 0){
-            printf("dup2 in failed\n");
-        }
-        close(pipefdIn[PIPERD]);
-    }
-
-    if((pid = fork()) < 0){
-        printf("ERROR fork\n");
-        exit(1);       
-    } else if(0 == pid){
-        
-        if(stddir&PIPEOUT){
-            close(pipefdOut[PIPERD]);
-            if(dup2(pipefdOut[PIPEWT], STDOUT_FILENO) < 0){
-                printf("dup2 out failed\n");
-            }
-        }       
-
-        if(execvp(this->cmdArgv[0], this->cmdArgv.data()) < 0){
-            printf("ERROR execvp\n");
-            exit(1);
-        }
-    } else {
-        waitpid(-1, &status, WUNTRACED|WCONTINUED);
-    }
 }
 

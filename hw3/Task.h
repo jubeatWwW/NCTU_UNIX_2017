@@ -17,12 +17,21 @@ using namespace std;
 #define PIPEIN 2
 #define PIPERD 0
 #define PIPEWT 1
+#define FILEIN 1
+#define FILEOUT 2
 
 class Task{
     public:
         Task(string cmd);
+        Task(string cmd, unsigned pipedir);
+        Task(string cmd, unsigned pipedir, unsigned filedir);
         string cmd;
         vector<char*> cmdArgv;
+        unsigned pipedir;
+        unsigned filedir;
+        string inputName;
+        string outputName;
+        bool error;
         void execute(unsigned stddir, int pipefdIn[2], int pipefdOut[2]);
     private:
         void _parseToArgv(string cmd);
