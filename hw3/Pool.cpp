@@ -59,6 +59,8 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
             return;
         }
 
+        spcmd = 0;
+
         if(pipe(pipes[currentTaskId]) < 0){
             perror("pipe err\n");
         }

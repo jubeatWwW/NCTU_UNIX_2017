@@ -14,6 +14,26 @@ using namespace std;
 
 #include "Pool.h"
 
+void shExport(const string& envstr){
+    char *envdup = strdup(envstr.c_str());
+    char *delim = strchr(envdup, '=');
+    
+    if(NULL == delim){
+        printf("syntax error\n");
+        return;
+    }
+
+    char *key = envdup;
+    *delim = '\0';
+    char *val = delim + 1;
+    
+    if(setenv(key, val, 1) < 0){
+        perror("setenv");
+    }
+
+    free(envdup);
+}
+
 int main(){
  
     signal(SIGTSTP, SIG_IGN);   
@@ -52,7 +72,12 @@ int main(){
                 break;
             case JOBS:
                 procGrps->list();
+                break;
             case EXPORT:
+                if(cmdline.length() < 7)
+                    printf("export: syntax error\n");
+                else
+                    shExport(pool->tasks.front().cmdArgv[1]);
                 break;
             case UNSET:
                 break;

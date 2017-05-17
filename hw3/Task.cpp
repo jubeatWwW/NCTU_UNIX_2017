@@ -75,7 +75,7 @@ unsigned Task::_builtInNo(string cmd){
     return ("exit" == cmd)?     EXIT :
            ("export" == cmd)?   EXPORT :
            ("unset" == cmd)?    UNSET :
-           ("jobs" == cmd)?     JOBS:
-           ("fg" == cmd)?       FG:
-           ("bg" == cmd)?       BG: 0;
+           ("jobs" == cmd)?     JOBS :
+           ("fg" == cmd)?       FG :
+           ("bg" == cmd)?       BG : 0;
 }
