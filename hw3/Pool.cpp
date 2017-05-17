@@ -4,7 +4,7 @@ Pool::Pool(string cmdline){
     this->cmdline = cmdline;
     this->_parseToVector(cmdline);
     
-    for(int i=0; i<this->cmd.size(); i++){
+    for(size_t i=0; i<this->cmd.size(); i++){
         Task task = (1 == this->cmd.size())? Task(string(cmd[i])) : 
                     (0 == i)? Task(string(cmd[i]), PIPEOUT) :
                     (this->cmd.size() - 1 == i)? Task(string(cmd[i]), PIPEIN) :
@@ -22,7 +22,7 @@ Pool::Pool(string cmdline){
 void Pool::_parseToVector(string cmdline){
     
     bool dblQuoteFlag = false, sglQuoteFlag = false;
-    for(int i=0,j=0; j<cmdline.length(); j++){
+    for(size_t i=0,j=0; j<cmdline.length(); j++){
         if(j > 0 && '\\' != cmdline[j-1]){
             if(!sglQuoteFlag && '\"' == cmdline[j])
                 dblQuoteFlag ^= true;
@@ -30,7 +30,7 @@ void Pool::_parseToVector(string cmdline){
                 sglQuoteFlag ^= true;
         }
         
-        if(j == cmdline.length()-1 || !(dblQuoteFlag|sglQuoteFlag) && '|' == cmdline[j+1]){
+        if(j == cmdline.length()-1 || (!(dblQuoteFlag|sglQuoteFlag) && '|' == cmdline[j+1]) ){
             this->cmd.push_back(cmdline.substr(i, (j++)-i+1));
             while(' ' == cmdline[j+1]) j++;
             i = j+1;
@@ -58,7 +58,6 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
             spcmd = cur.cmdType;
             return;
         }
-
         spcmd = 0;
 
         if(pipe(pipes[currentTaskId]) < 0){
@@ -71,6 +70,10 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
             perror("fork err");
         } else if(0 == pids[currentTaskId]){
             
+            signal(SIGTSTP, SIG_DFL);
+            signal(SIGQUIT, SIG_DFL);
+            signal(SIGINT, SIG_DFL);
+
             if(PIPEIN & cur.pipedir){
                 if(dup2(pipes[currentTaskId - 1][PIPERD], STDIN_FILENO) < 0)
                     perror("dup2 err");

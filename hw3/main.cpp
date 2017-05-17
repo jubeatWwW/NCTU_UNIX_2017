@@ -35,21 +35,25 @@ void shExport(const string& envstr){
 }
 
 int main(){
+    ProcGrps* procGrps = new ProcGrps();
+    int jshpid = 0;
+    int jshpgid = getpgid(jshpid = getpid());
  
-    signal(SIGTSTP, SIG_IGN);   
-    //signal(SIGINT, SIG_IGN);
-    //signal(SIGQUIT, SIG_IGN);
+    signal(SIGTSTP, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
     signal(SIGTTIN, SIG_IGN);
+    signal(SIGINT, SIG_IGN);
 
-    ProcGrps* procGrps = new ProcGrps();
-    int jshpgid = getpgid(jshpgid = getpid());
 
     string cmdline;
     printf("jsh >> ");
     while(getline(cin, cmdline)){    
         
-        
+        while(' ' == cmdline[0]){
+            cmdline.erase(cmdline.begin());
+        }
+
         if("" == cmdline){
             printf("jsh >> ");
             continue;
@@ -70,6 +74,9 @@ int main(){
             case FG:
                 procGrps->PopGrp();
                 break;
+            case BG:
+                procGrps->BgGrp();
+                break;
             case JOBS:
                 procGrps->list();
                 break;
@@ -80,12 +87,16 @@ int main(){
                     shExport(pool->tasks.front().cmdArgv[1]);
                 break;
             case UNSET:
+                if(cmdline.length() < 6)
+                    printf("export: syntax error\n");
+                else
+                    unsetenv(pool->tasks.front().cmdArgv[1]);
                 break;
 
         }
 
         printf("jsh >> ");
     }
-    printf("BYE\n");
+    printf("BYE!!\n");
     return 0;
 }

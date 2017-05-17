@@ -25,19 +25,36 @@ Task::Task(string cmd, unsigned pipedir, unsigned filedir){
 }
 
 void Task::_parseToArgv(string cmd){
-    for(int i=0; i<cmd.length(); i++){
+    for(size_t i=0; i<cmd.length(); i++){
         if('\\' == cmd[i])
             cmd.erase(i, 1);
     }
     istringstream iss(cmd);
-    vector<string> arg{istream_iterator<string>{iss}, 
+    vector<string> args{istream_iterator<string>{iss}, 
                         istream_iterator<string>{}
                        };
+
+    vector<string> arg;
+    for(string s : args){
+        if(string::npos != s.find("*") || string::npos != s.find("?")){
+            glob_t glob_res;
+            glob(s.c_str(), GLOB_TILDE, NULL, &glob_res);
+            for(size_t i=0 ; i<glob_res.gl_pathc ; i++){
+                arg.push_back(glob_res.gl_pathv[i]);
+            }
+            if(!glob_res.gl_pathv){
+                arg.push_back(s);
+            }
+        } else {
+            arg.push_back(s);
+        }
+    }
+
     vector<char*> argv;
     
     this->cmdType  = this->_builtInNo(arg[0]);
 
-    for(int i=0; i<arg.size(); i++){
+    for(size_t i=0; i<arg.size(); i++){
         char* str = strdup(arg[i].c_str());
         
         if("<" == arg[i]){
