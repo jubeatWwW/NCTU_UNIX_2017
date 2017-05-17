@@ -24,12 +24,9 @@ void ProcGrps::PopGrp(){
     waitpid(lastpid, &status, WUNTRACED);
     
     if(WIFSTOPPED(status)){
-        printf("sig stopped\n");
     } else if(WIFEXITED(status)){
-        printf("sig exited\n");
         this->groups.pop_back();
     } else {
-        printf("sig unknown\n");
     }
     tcsetpgrp(0, getpgrp());
 }

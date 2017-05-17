@@ -130,12 +130,9 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
             waitpid(pids[i], &status, WUNTRACED);
             
             if(WIFSTOPPED(status)){
-                printf("sig stopped\n");
                 spcmd = PSTOP;
             } else if(WIFEXITED(status)){
-                printf("sig exited\n");
             } else {
-                printf("sig unknown\n");
             }
         }
         tcsetpgrp(0, jshpgid);
