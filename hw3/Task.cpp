@@ -38,7 +38,7 @@ void Task::_parseToArgv(string cmd){
     this->cmdType  = this->_builtInNo(arg[0]);
 
     for(int i=0; i<arg.size(); i++){
-        char* str = (char*)malloc(1024 * sizeof(char));
+        char* str = strdup(arg[i].c_str());
         
         if("<" == arg[i]){
             this->filedir |= FILEIN;
@@ -64,12 +64,6 @@ void Task::_parseToArgv(string cmd){
             }
         }
 
-        int j;
-        for(j=0; j<arg[i].length(); j++){
-            str[j] = arg[i][j];
-        }
-        str[j] = '\0';
-
         argv.push_back(str);
     }
     argv.push_back((char*)0);
@@ -78,19 +72,10 @@ void Task::_parseToArgv(string cmd){
 }
 
 unsigned Task::_builtInNo(string cmd){
-    if("exit" == cmd){
-        return EXIT;
-    } else if("export" == cmd){
-        return EXPORT;
-    } else if("unset" == cmd){
-        return UNSET;
-    } else if("jobs" == cmd){
-        return JOBS;
-    } else if("fg" == cmd){
-        return FG;
-    } else if("bg" == cmd){
-        return BG;
-    } else {
-        return 0;
-    }
+    return ("exit" == cmd)?     EXIT :
+           ("export" == cmd)?   EXPORT :
+           ("unset" == cmd)?    UNSET :
+           ("jobs" == cmd)?     JOBS:
+           ("fg" == cmd)?       FG:
+           ("bg" == cmd)?       BG: 0;
 }

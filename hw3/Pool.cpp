@@ -56,7 +56,7 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
         
         if(cur.cmdType > 0){
             spcmd = cur.cmdType;
-            break;
+            return;
         }
 
         if(pipe(pipes[currentTaskId]) < 0){
@@ -68,10 +68,6 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
         if(pids[currentTaskId] < 0){
             perror("fork err");
         } else if(0 == pids[currentTaskId]){
-            printf("currentTaskId: %d\n", currentTaskId);
-
-            //printf("file: %s\n", cur.inputName.c_str());
-            //printf("filedir: %d\n", cur.filedir);
             
             if(PIPEIN & cur.pipedir){
                 if(dup2(pipes[currentTaskId - 1][PIPERD], STDIN_FILENO) < 0)
@@ -107,7 +103,6 @@ void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spc
             }
 
         } else {
-            printf("current pid: %d\n", pids[currentTaskId]);
             setpgid(pids[currentTaskId], pids[0]);
             
             if(isfirst){

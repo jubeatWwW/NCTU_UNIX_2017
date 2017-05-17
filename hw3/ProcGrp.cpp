@@ -11,7 +11,7 @@ void ProcGrps::PopGrp(){
     if(this->groups.empty())
         return;
     
-    ProcGrp pg = this->groups[this->groups.size() - 1];
+    ProcGrp pg = this->groups.back();
     pid_t lastpid = pg.lastjob;
     pid_t fgpid = pg.lead;
     int status;
@@ -32,6 +32,18 @@ void ProcGrps::PopGrp(){
         printf("sig unknown\n");
     }
     tcsetpgrp(0, getpgrp());
+}
+
+void ProcGrps::BgGrp(){
+    if(this->groups.empty())
+        return;
+    
+    ProcGrp pg = this->groups.back();
+    pid_t lastpid = pg.lastjob;
+    if(kill(lastpid, SIGCONT) == -1){
+        perror("kill -CONT");
+    }
+    
 }
 
 void ProcGrps::list(){

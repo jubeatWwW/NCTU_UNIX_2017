@@ -28,6 +28,7 @@ class ProcGrps{
         void AddGrp(ProcGrp pg);
         void PopGrp();
         void RmGrp(pid_t pid);
+        void BgGrp();
         void list();
 };
 
