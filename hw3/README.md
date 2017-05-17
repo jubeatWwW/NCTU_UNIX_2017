@@ -8,6 +8,16 @@ Hw3 of unix programming in 2017
 - git clone https://github.com/jubeatWwW/NCTU_UNIX_2017.git
 - git checkout feature/hw3
 
+## Code Example
+
+- ls -al
+- ps | cat | less
+- ps > test1
+- cat < test2
+- ps | cat | cat | cat > test4
+- less test5 -> ctrl+Z -> fg
+- jobs
+
 ## API Reference
 
 - make
