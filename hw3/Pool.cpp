@@ -41,90 +41,96 @@ void Pool::_parseToVector(string cmdline){
         cout << this->cmd[i] << endl;
     }*/
 }
-void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd){
+
+void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd, int jshpgid){
     int pipefd1[2];
     int pipefd2[2];
     
+    int tasksNum = tasks.size();
+    int pipes[tasksNum][2];
+    pid_t pids[tasksNum];
+
     bool isfirst = true;
 
     while(!tasks.empty()){
         Task cur = tasks.front();
+        int currentTaskId = tasksNum - tasks.size();
         
         if(cur.cmdType > 0){
             spcmd = cur.cmdType;
             break;
         }
 
-        if(pipe(pipefd2) < 0){
-            perror("pipe fd2 err\n");
+        if(pipe(pipes[currentTaskId]) < 0){
+            perror("pipe err\n");
         }
         
-        pid_t pid;
         int status;
-
-        if((pid = fork()) < 0){
+        pids[currentTaskId] = fork();
+        if(pids[currentTaskId] < 0){
             perror("fork err");
-        } else if(0 == pid){
-
-            signal(SIGINT, SIG_DFL);
-            signal(SIGQUIT, SIG_DFL);
-            signal(SIGTSTP, SIG_DFL);   
+        } else if(0 == pids[currentTaskId]){
+            printf("currentTaskId: %d\n", currentTaskId);
 
             //printf("file: %s\n", cur.inputName.c_str());
             //printf("filedir: %d\n", cur.filedir);
             
-            if((PIPEIN|PIPEOUT)&cur.pipedir)
-                close(pipefd2[PIPERD]);
-            
+            if(PIPEIN & cur.pipedir){
+                if(dup2(pipes[currentTaskId - 1][PIPERD], STDIN_FILENO) < 0)
+                    perror("dup2 err");
+                close(pipes[currentTaskId - 1][PIPERD]);
+                close(pipes[currentTaskId - 1][PIPEWT]);
+            }
+
+            if(PIPEOUT & cur.pipedir){
+                if(dup2(pipes[currentTaskId][PIPEWT], STDOUT_FILENO) < 0)
+                    perror("dup2 out err");
+                close(pipes[currentTaskId][PIPERD]);
+                close(pipes[currentTaskId][PIPEWT]);
+            }
+
             if(FILEIN&cur.filedir){
                 int fd = open(cur.inputName.c_str(), O_RDONLY, 0644); 
                 if(dup2(fd, STDIN_FILENO) < 0){
                     perror("dup2 err");
                 }
                 close(fd);
-            } else if(PIPEIN & cur.pipedir){
-                if(dup2(pipefd1[PIPERD], STDIN_FILENO) < 0)
-                    perror("dup2 err");
-                close(pipefd1[PIPERD]);
             }
-
             if(FILEOUT&cur.filedir){
                 int fd = open(cur.outputName.c_str(), O_RDWR|O_CREAT|O_TRUNC);
                 if(dup2(fd, STDOUT_FILENO) < 0)
                     perror("dup2 err");
                 close(fd);
-            } else if(PIPEOUT & cur.pipedir){
-                if(dup2(pipefd2[PIPEWT], STDOUT_FILENO) < 0)
-                    perror("dup2 err");
-                close(pipefd2[PIPEWT]);
             }
+
             if(execvp(cur.cmdArgv[0], cur.cmdArgv.data()) < 0){
                 perror("exec err");
                 _exit(1);
             }
 
         } else {
+            printf("current pid: %d\n", pids[currentTaskId]);
+            setpgid(pids[currentTaskId], pids[0]);
+            
             if(isfirst){
                 isfirst = false;
-                grppid = pid;
+                grppid = pids[0];
                 grpname = cmdline;
+                tcsetpgrp(0, grppid);
             }
-            setpgid(pid, grppid);
-
-            waitpid(pid, &status, WUNTRACED|WCONTINUED);
             
-
-            close(pipefd2[PIPEWT]);
-            close(pipefd1[PIPERD]);
-
-            pipefd1[PIPEWT] = pipefd2[PIPEWT];
-            pipefd1[PIPERD] = pipefd2[PIPERD];
-            
-            if(FILEOUT&cur.filedir){
-                int fd = open(cur.outputName.c_str(), O_RDONLY, 0644); 
-                pipefd1[PIPERD] = fd;
+            if(PIPEIN & cur.pipedir){
+                close(pipes[currentTaskId - 1][PIPERD]);
+                close(pipes[currentTaskId - 1][PIPEWT]);
             }
 
+            
+            tasks.pop();
+        }
+
+        for(int i=0; i<tasksNum; i++){
+            waitpid(pids[i], &status, WUNTRACED|WCONTINUED);
+            
             if(WIFSTOPPED(status)){
                 printf("sig stopped\n");
                 spcmd = PSTOP;
@@ -133,8 +139,7 @@ void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd){
             } else {
                 printf("sig unknown\n");
             }
-            
-            tasks.pop();
         }
+        tcsetpgrp(0, jshpgid);
     }
 }
