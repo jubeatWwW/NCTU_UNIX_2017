@@ -14,6 +14,7 @@
 using namespace std;
 
 #include "Task.h"
+#include "ProcGrp.h"
 
 class Pool{
     public:
@@ -21,7 +22,7 @@ class Pool{
         string cmdline;
         vector<string> cmd;
         queue<Task> tasks;
-        void execute();
+        void execute(pid_t& pid, string& name, unsigned& spcmd);
 
     private:
         void _parseToVector(string cmdline);

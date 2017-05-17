@@ -20,6 +20,14 @@ using namespace std;
 #define FILEIN 1
 #define FILEOUT 2
 
+#define EXIT 1
+#define EXPORT 2
+#define UNSET 3
+#define JOBS 4
+#define FG 5
+#define BG 6
+#define PSTOP 7
+
 class Task{
     public:
         Task(string cmd);
@@ -32,7 +40,8 @@ class Task{
         string inputName;
         string outputName;
         bool error;
-        void execute(unsigned stddir, int pipefdIn[2], int pipefdOut[2]);
+        unsigned cmdType;
     private:
+        unsigned _builtInNo(string cmd);
         void _parseToArgv(string cmd);
 };

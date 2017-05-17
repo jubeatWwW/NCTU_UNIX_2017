@@ -1,2 +1,2 @@
 all:
-	g++ -std=c++11 main.cpp Pool.cpp Task.cpp
+	g++ -std=c++11 main.cpp Pool.cpp Task.cpp ProcGrp.cpp

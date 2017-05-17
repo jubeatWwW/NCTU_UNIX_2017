@@ -41,14 +41,19 @@ void Pool::_parseToVector(string cmdline){
         cout << this->cmd[i] << endl;
     }*/
 }
-
-
-void Pool::execute(){
+void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd){
     int pipefd1[2];
     int pipefd2[2];
+    
+    bool isfirst = true;
 
     while(!tasks.empty()){
         Task cur = tasks.front();
+        
+        if(cur.cmdType > 0){
+            spcmd = cur.cmdType;
+            break;
+        }
 
         if(pipe(pipefd2) < 0){
             perror("pipe fd2 err\n");
@@ -60,8 +65,13 @@ void Pool::execute(){
         if((pid = fork()) < 0){
             perror("fork err");
         } else if(0 == pid){
-            printf("file: %s\n", cur.inputName.c_str());
-            printf("filedir: %d\n", cur.filedir);
+
+            signal(SIGINT, SIG_DFL);
+            signal(SIGQUIT, SIG_DFL);
+            signal(SIGTSTP, SIG_DFL);   
+
+            //printf("file: %s\n", cur.inputName.c_str());
+            //printf("filedir: %d\n", cur.filedir);
             
             if((PIPEIN|PIPEOUT)&cur.pipedir)
                 close(pipefd2[PIPERD]);
@@ -94,8 +104,16 @@ void Pool::execute(){
             }
 
         } else {
+            if(isfirst){
+                isfirst = false;
+                grppid = pid;
+                grpname = cmdline;
+            }
+            setpgid(pid, grppid);
+
             waitpid(pid, &status, WUNTRACED|WCONTINUED);
             
+
             close(pipefd2[PIPEWT]);
             close(pipefd1[PIPERD]);
 
@@ -109,6 +127,7 @@ void Pool::execute(){
 
             if(WIFSTOPPED(status)){
                 printf("sig stopped\n");
+                spcmd = PSTOP;
             } else if(WIFEXITED(status)){
                 printf("sig exited\n");
             } else {

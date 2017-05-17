@@ -34,6 +34,8 @@ void Task::_parseToArgv(string cmd){
                         istream_iterator<string>{}
                        };
     vector<char*> argv;
+    
+    this->cmdType  = this->_builtInNo(arg[0]);
 
     for(int i=0; i<arg.size(); i++){
         char* str = (char*)malloc(1024 * sizeof(char));
@@ -75,3 +77,20 @@ void Task::_parseToArgv(string cmd){
     this->cmdArgv = argv;
 }
 
+unsigned Task::_builtInNo(string cmd){
+    if("exit" == cmd){
+        return EXIT;
+    } else if("export" == cmd){
+        return EXPORT;
+    } else if("unset" == cmd){
+        return UNSET;
+    } else if("jobs" == cmd){
+        return JOBS;
+    } else if("fg" == cmd){
+        return FG;
+    } else if("bg" == cmd){
+        return BG;
+    } else {
+        return 0;
+    }
+}

@@ -17,20 +17,39 @@ using namespace std;
 int main(){
  
     signal(SIGTSTP, SIG_IGN);   
+    signal(SIGINT, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+    
+    ProcGrps* procGrps = new ProcGrps();
 
     string cmdline;
     printf("jsh >> ");
     while(getline(cin, cmdline)){    
+        
+        
         if("" == cmdline){
-            printf("empty command\n");
             printf("jsh >> ");
             continue;
         }
+        
+        unsigned spcmd;
+        int pid;
+        string name;
         Pool* pool = new Pool(cmdline);
-        pool->execute();
-        printf("%s\n", cmdline.c_str());
+        pool->execute(pid, name, spcmd);
+
+        if(EXIT == spcmd) break;
+        
+        if(PSTOP == spcmd){
+            procGrps->AddGrp(ProcGrp(pid, name));
+            procGrps->list();
+        }
+
+        if(FG == spcmd){
+        }
+
         printf("jsh >> ");
     }
-    printf("WTF\n");
+    printf("BYE\n");
     return 0;
 }
