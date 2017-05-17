@@ -13,6 +13,16 @@
 using namespace std;
 
 #include "Pool.h"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+void PROMPT(){
+    printf(ANSI_COLOR_YELLOW "jsh ");
+    printf(ANSI_COLOR_CYAN ">> ");
+    printf(ANSI_COLOR_RESET);
+}
 
 void shExport(const string& envstr){
     char *envdup = strdup(envstr.c_str());
@@ -47,7 +57,7 @@ int main(){
 
 
     string cmdline;
-    printf("jsh >> ");
+    PROMPT();
     while(getline(cin, cmdline)){    
         
         while(' ' == cmdline[0]){
@@ -55,7 +65,7 @@ int main(){
         }
 
         if("" == cmdline){
-            printf("jsh >> ");
+            PROMPT();
             continue;
         }
         
@@ -94,8 +104,8 @@ int main(){
                 break;
 
         }
-
-        printf("jsh >> ");
+        
+        PROMPT();
     }
     printf("BYE!!\n");
     return 0;
