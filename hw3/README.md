@@ -5,14 +5,14 @@ Hw3 of unix programming in 2017
 
 ## Installation
 
-git clone https://github.com/jubeatWwW/NCTU_UNIX_2017.git
-git checkout feature/hw3
+- git clone https://github.com/jubeatWwW/NCTU_UNIX_2017.git
+- git checkout feature/hw3
 
 ## API Reference
 
-make
-./jsh
-make clean
+- make
+- ./jsh
+- make clean
 
 ## License
 
