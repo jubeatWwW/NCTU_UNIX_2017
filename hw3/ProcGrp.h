@@ -15,8 +15,9 @@ using namespace std;
 
 class ProcGrp{
     public:
-        ProcGrp(pid_t pid, string name);
+        ProcGrp(pid_t pid, string name, pid_t lastjob);
         pid_t lead;
+        pid_t lastjob;
         string name;
 };
 

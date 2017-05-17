@@ -42,9 +42,7 @@ void Pool::_parseToVector(string cmdline){
     }*/
 }
 
-void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd, int jshpgid){
-    int pipefd1[2];
-    int pipefd2[2];
+void Pool::execute(pid_t& grppid, string& grpname, pid_t& lastjob, unsigned& spcmd, int jshpgid){
     
     int tasksNum = tasks.size();
     int pipes[tasksNum][2];
@@ -97,7 +95,7 @@ void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd, int jshpgid)
                 close(fd);
             }
             if(FILEOUT&cur.filedir){
-                int fd = open(cur.outputName.c_str(), O_RDWR|O_CREAT|O_TRUNC);
+                int fd = open(cur.outputName.c_str(), O_RDWR|O_CREAT|O_TRUNC, 0644);
                 if(dup2(fd, STDOUT_FILENO) < 0)
                     perror("dup2 err");
                 close(fd);
@@ -123,13 +121,13 @@ void Pool::execute(pid_t& grppid, string& grpname, unsigned& spcmd, int jshpgid)
                 close(pipes[currentTaskId - 1][PIPERD]);
                 close(pipes[currentTaskId - 1][PIPEWT]);
             }
-
             
             tasks.pop();
         }
-
+        
+        lastjob = pids[tasksNum - 1];
         for(int i=0; i<tasksNum; i++){
-            waitpid(pids[i], &status, WUNTRACED|WCONTINUED);
+            waitpid(pids[i], &status, WUNTRACED);
             
             if(WIFSTOPPED(status)){
                 printf("sig stopped\n");

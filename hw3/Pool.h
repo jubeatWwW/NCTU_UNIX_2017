@@ -22,7 +22,7 @@ class Pool{
         string cmdline;
         vector<string> cmd;
         queue<Task> tasks;
-        void execute(pid_t& pid, string& name, unsigned& spcmd, int jshpgid);
+        void execute(pid_t& pid, string& name, pid_t& lastjob, unsigned& spcmd, int jshpgid);
 
     private:
         void _parseToVector(string cmdline);

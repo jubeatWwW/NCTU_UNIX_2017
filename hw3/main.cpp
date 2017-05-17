@@ -36,19 +36,23 @@ int main(){
         }
         
         unsigned spcmd;
-        int pid;
+        pid_t pid, lastjob;
         string name;
         Pool* pool = new Pool(cmdline);
-        pool->execute(pid, name, spcmd, jshpgid);
+        pool->execute(pid, name, lastjob, spcmd, jshpgid);
 
         if(EXIT == spcmd) break;
-        
-        if(PSTOP == spcmd){
-            procGrps->AddGrp(ProcGrp(pid, name));
-            procGrps->list();
-        }
 
-        if(FG == spcmd){
+        switch(spcmd){
+            case PSTOP:
+                procGrps->AddGrp(ProcGrp(pid, name, lastjob));
+                break;
+            case FG:
+                procGrps->PopGrp();
+                break;
+            case JOBS:
+                procGrps->list();
+
         }
 
         printf("jsh >> ");
