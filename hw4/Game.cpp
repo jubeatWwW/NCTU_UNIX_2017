@@ -1,0 +1,193 @@
+#include "Game.h"
+
+Game::Game(int sockfd, int role){
+    this->sockfd = sockfd;
+    this->curPlayer = PLAYER1;
+    this->role = role;
+
+	initscr();			// start curses mode 
+	getmaxyx(stdscr, height, width);// get screen size
+
+	cbreak();			// disable buffering
+					// - use raw() to disable Ctrl-Z and Ctrl-C as well,
+	halfdelay(1);			// non-blocking getch after n * 1/10 seconds
+	noecho();			// disable echo
+	keypad(stdscr, TRUE);		// enable function keys and arrow keys
+	curs_set(0);			// hide the cursor
+
+	init_colors();
+}
+
+void Game::controller(){
+restart:
+	clear();
+	cx = cy = 3;
+	init_board();
+	draw_board();
+	draw_cursor(cx, cy, 1);
+	draw_score();
+	refresh();
+
+	attron(A_BOLD);
+	move(height-1, 0);	printw("Arrow keys: move; Space: put GREEN; Return: put PURPLE; R: reset; Q: quit");
+	attroff(A_BOLD);
+
+	while(true) {			// main loop
+		int ch = getch();
+		int moved = 0;
+
+		switch(ch) {
+		case ' ':
+        {
+            if(curPlayer != role){
+                draw_message("It's not your turn", 1);
+                continue;
+            }
+            
+            if(DropPiece(cx, cy)){
+                string str = "p"+to_string(cx)+to_string(cy);
+                write(sockfd, str.c_str(), str.length());
+            }
+
+        }
+            break;
+		/*case 0x0d:
+		case 0x0a:
+		case KEY_ENTER:
+			board[cy][cx] = PLAYER2;
+			draw_cursor(cx, cy, 1);
+			draw_score();
+			break;*/
+		case 'q':
+		case 'Q':
+			goto quit;
+			break;
+		case 'r':
+		case 'R':
+			goto restart;
+			break;
+		case 'k':
+		case KEY_UP:
+			draw_cursor(cx, cy, 0);
+			cy = (cy-1+BOARDSZ) % BOARDSZ;
+			draw_cursor(cx, cy, 1);
+			moved++;
+			break;
+		case 'j':
+		case KEY_DOWN:
+			draw_cursor(cx, cy, 0);
+			cy = (cy+1) % BOARDSZ;
+			draw_cursor(cx, cy, 1);
+			moved++;
+			break;
+		case 'h':
+		case KEY_LEFT:
+			draw_cursor(cx, cy, 0);
+			cx = (cx-1+BOARDSZ) % BOARDSZ;
+			draw_cursor(cx, cy, 1);
+			moved++;
+			break;
+		case 'l':
+		case KEY_RIGHT:
+			draw_cursor(cx, cy, 0);
+			cx = (cx+1) % BOARDSZ;
+			draw_cursor(cx, cy, 1);
+			moved++;
+			break;
+		}
+
+		if(moved) {
+			refresh();
+			moved = 0;
+		}
+
+		napms(1);		// sleep for 1ms
+	}
+
+quit:
+	endwin();			// end curses mode
+    
+}
+
+bool Game::DropPiece(int x, int y){
+    
+    if(0 != board[y][x]){
+        draw_message("You can't drop pieces here", 1);
+        refresh();
+        return false;
+    }
+    
+    
+    int cnt = _DropPiece(x, y);
+    
+    if(cnt > 0){
+        board[y][x] = curPlayer;
+        
+        refresh();
+        draw_message(to_string(cnt).c_str(), 1);
+
+        draw_board();
+        draw_cursor(cx, cy, 1);
+        draw_score();
+        next();
+        return true;
+    } else {
+        draw_message("You can't drop pieces here", 1);
+        refresh();
+        return false;
+    }
+}
+
+int Game::_DropPiece(int x, int y){
+    int mx[3] = {0, -1, 1};
+    int my[3] = {0, -1, 1}; 
+    int cnt = 0;
+
+    for(int i=0; i<3; i++){
+        for(int j=0; j<3; j++){
+            if(0==i && 0==j)
+                continue;
+            
+            int nx = x+mx[i]; 
+            int ny = y+my[j];
+            if(nx < 0 || ny < 0 || nx > 7 || ny > 7)
+                continue;
+            
+            bool flag = false;
+            while(board[ny][nx] == curPlayer*(-1)){
+                int nnx = nx+mx[i]; 
+                int nny = ny+my[j];
+                if(nnx < 0 || nny < 0 || nnx > 7 || nny > 7)
+                    break;
+
+                if(board[nny][nnx] == curPlayer){
+                    flag = true;
+                    break;
+                }
+
+                nx += mx[i];
+                ny += my[j];
+            }
+
+            if(flag){
+                cnt ++;
+                nx = x+mx[i]; 
+                ny = y+my[j];
+                while(board[ny][nx] != curPlayer){
+                    board[ny][nx] = curPlayer;
+                    nx += mx[i];
+                    ny += my[j];
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
+void Game::next(){
+    curPlayer = (PLAYER1 == curPlayer)?PLAYER2:PLAYER1;
+    string player = (PLAYER1 == curPlayer)?"PLAYER1":"PLAYER2"; 
+    string str = "Now Playing: " + player;
+    draw_message(str.c_str(), 1);
+    refresh();
+}
