@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 using namespace std;
 
@@ -26,7 +27,22 @@ void readThread(int fd);
 void writeThread(int fd);
 void screenThread(int fd);
 
+void sighandler(int signo){
+    if(s){
+        write(s->newsockfd, "q", 1);
+        exit(0);
+    }
+    if(c){
+        write(c->sockfd, "q", 1);
+        exit(0);
+    }
+    exit(0);
+}
+
 int main(int argc, char *argv[]){
+
+    signal(SIGINT, sighandler);
+
     if(3 != argc){
         printf("usage: -s <PORT> | -c <IP>:<PORT>\n");
         exit(1);
@@ -98,7 +114,7 @@ void writeThread(int fd){
     while(true){
         printf("input: ");
         scanf("%s", buffer);
-        if((n = write(fd, buffer, strlen(buffer))) < 0){
+        if((n = write(fd, buffer, strlen(buffer)+1)) < 0){
             printf("write error\n");
             exit(1);
         }

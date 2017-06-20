@@ -68,12 +68,12 @@ bool Game::controller(){
             break;
 		case 'q':
 		case 'Q':
-            write(sockfd, "q", 2);
+            write(sockfd, "q", 1);
 			return false;
             break;
 		case 'r':
 		case 'R':
-            write(sockfd, "r", 2);
+            write(sockfd, "r", 1);
             return true;
             break;
 		case 'k':
