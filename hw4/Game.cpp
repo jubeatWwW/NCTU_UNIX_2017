@@ -1,5 +1,9 @@
 #include "Game.h"
 
+void draw_blank(){
+    draw_message("                                                    ", 0);
+}
+
 Game::Game(int sockfd, int role){
     this->sockfd = sockfd;
     this->curPlayer = PLAYER1;
@@ -32,7 +36,7 @@ bool Game::controller(){
 	refresh();
 
 	attron(A_BOLD);
-	move(height-1, 0);	printw("Arrow keys: move; Space: put GREEN; Return: put PURPLE; R: reset; Q: quit");
+	move(height-1, 0);	printw("Arrow keys: move; Space: drop piece; R: reset; Q: quit");
 	attroff(A_BOLD);
 
 	while(true) {			// main loop
@@ -43,11 +47,14 @@ bool Game::controller(){
 		case ' ':
         {
             if(gameover){
+                draw_blank();
                 draw_message("Game is over, press R to restart or Q to leave", 1);
-                
+                refresh();
             } else {
                 if(curPlayer != role){
+                    draw_blank();
                     draw_message("It's not your turn", 1);
+                    refresh();
                     continue;
                 }
                 
@@ -114,6 +121,7 @@ bool Game::controller(){
 bool Game::DropPiece(int x, int y){
     
     if(0 != board[y][x]){
+        draw_blank();
         draw_message("You can't drop pieces here", 1);
         refresh();
         return false;
@@ -125,8 +133,9 @@ bool Game::DropPiece(int x, int y){
     if(cnt > 0){
         board[y][x] = curPlayer;
         
-        refresh();
+        draw_blank();
         draw_message(to_string(cnt).c_str(), 1);
+        refresh();
 
         draw_board();
         draw_cursor(cx, cy, 1);
@@ -135,24 +144,42 @@ bool Game::DropPiece(int x, int y){
             string winner = (p.first > p.second)? "PLAYER1 wins" :
                             (p.first < p.second)? "PLAYER2 wins" :
                             "DRAW!!";
+            draw_blank();
             draw_message(winner.c_str(), 1);
+            refresh();
             gameover = true;
         } else if(0 == p.first){
+            draw_blank();
             draw_message("PLAYER2 wins", 1);
+            refresh();
             gameover = true;
         } else if(0 == p.second){
+            draw_blank();
             draw_message("PLAYER1 wins", 1);
+            refresh();
             gameover = true;
         } else {
-            if(CheckPiece())
+            if(CheckPiece(curPlayer))
                 next();
             else{
-                draw_message("No place to drop", 1);
-                refresh();
+                if(CheckPiece(curPlayer*(-1))){
+                    string winner = (p.first > p.second)? "PLAYER1 wins" :
+                                    (p.first < p.second)? "PLAYER2 wins" :
+                                    "DRAW!!";
+                    draw_blank();
+                    draw_message(winner.c_str(), 1);
+                    refresh();
+                    gameover = true;
+                } else {
+                    draw_blank();
+                    draw_message("No place to drop", 1);
+                    refresh();
+                }
             }
         }
         return true;
     } else {
+        draw_blank();
         draw_message("You can't drop pieces here", 1);
         refresh();
         return false;
@@ -205,10 +232,10 @@ int Game::_DropPiece(int x, int y){
     return cnt;
 }
 
-bool Game::CheckPiece(){
+bool Game::CheckPiece(int player){
     for(int i=0; i<8; i++){
         for(int j=0; j<8; j++){
-            if(_CheckPiece(i, j))
+            if(_CheckPiece(i, j, player))
                 return true;
         }
     }
@@ -216,7 +243,7 @@ bool Game::CheckPiece(){
     return false;
 }
 
-bool Game::_CheckPiece(int x, int y){
+bool Game::_CheckPiece(int x, int y, int player){
     int mx[3] = {0, -1, 1};
     int my[3] = {0, -1, 1}; 
 
@@ -256,6 +283,7 @@ void Game::next(){
     curPlayer = (PLAYER1 == curPlayer)?PLAYER2:PLAYER1;
     string player = (PLAYER1 == curPlayer)?"PLAYER1":"PLAYER2"; 
     string str = "Now Playing: " + player;
-    draw_message(str.c_str(), 1);
+    draw_blank();
+    draw_message(str.c_str(), 0);
     refresh();
 }

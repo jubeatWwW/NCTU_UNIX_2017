@@ -1,7 +1,6 @@
 #include "server.h"
 
 server::server(int portno){
-    printf("act as server\n");
     
     this->portno = portno;
     this->restart = false;   
@@ -32,7 +31,7 @@ void server::sockConf(){
 
 void server::Accept(){
     clilen = sizeof(cliaddr);
-    printf("waiting for accept\n");
+    printf("waiting for opponent...\n");
     newsockfd = accept(sockfd, (sockaddr*) &cliaddr, &clilen);
 }
 
@@ -42,7 +41,6 @@ void server::Close(){
 }
 
 void server::sThread(server *s){
-    printf("this is server thread\n");
     s->Accept();
 restart:
     thread r(readThread, s->newsockfd);

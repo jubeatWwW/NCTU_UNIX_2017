@@ -31,7 +31,6 @@ void client::Close(){
 }
 
 void client::cThread(client* c){
-    printf("this is client thread\n");
     c->Connect();
 
 restart:

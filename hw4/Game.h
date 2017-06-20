@@ -18,7 +18,7 @@ class Game{
         Game(int sockfd, int role);
         bool controller();
         bool DropPiece(int x, int y);
-        bool CheckPiece();
+        bool CheckPiece(int player);
         int sockfd;
         int curPlayer;
         int role;
@@ -26,5 +26,5 @@ class Game{
     private:
         void next();
         int _DropPiece(int x, int y);
-        bool _CheckPiece(int x, int y);
+        bool _CheckPiece(int x, int y, int player);
 };

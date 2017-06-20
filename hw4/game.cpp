@@ -28,7 +28,7 @@ void screenThread(int fd);
 
 int main(int argc, char *argv[]){
     if(3 != argc){
-        printf("usage: \n");
+        printf("usage: -s <PORT> | -c <IP>:<PORT>\n");
         exit(1);
     }
 
@@ -43,7 +43,6 @@ int main(int argc, char *argv[]){
         server::sThread(s);
     } else if("-c" == opt) {
         role = PLAYER2;
-        printf("act as client\n");
         string ipstr(argv[2]);
 
         size_t fnum = ipstr.find(':');
@@ -54,14 +53,13 @@ int main(int argc, char *argv[]){
         
         portno = atoi(ipstr.substr(fnum+1).c_str());
         char* ip = strdup(ipstr.substr(0, fnum).c_str());
-        printf("ip: %s\n", ip);
-        printf("port: %d\n", portno);
 
         c = new client(ip, portno);
         client::cThread(c);
 
     } else {
-        printf("Unknown option\n");
+        printf("usage: -s <PORT> | -c <IP>:<PORT>\n");
+        exit(1);
     }
 }
 
