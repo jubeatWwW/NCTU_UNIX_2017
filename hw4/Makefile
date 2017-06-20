@@ -1,7 +1,7 @@
 CXX=g++
 CFLAGS	= -c -Wall -g -I/usr/include/ncurses -std=c++11
 LDFLAGS	= -lncurses -pthread
-SOURCES=game.cpp othello.cpp server.cpp client.cpp Game.cpp
+SOURCES=main.cpp othello.cpp server.cpp client.cpp Game.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=othello
 
