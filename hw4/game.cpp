@@ -74,16 +74,21 @@ void readThread(int fd){
             printf("read error\n");
             exit(1);
         }
-        //printf("Here is the message: %s\n",buffer);
         
         if('p' == buffer[0]){
             int x = buffer[1] - '0';
             int y = buffer[2] - '0';
             draw_message("msg", 1);
             game->DropPiece(x, y);
+        } else if('r' == buffer[0]){
+            if(s)
+                s->restart = true;
+            if(c)
+                c->restart = true;
+            break;
+        } else if('q' == buffer[0]){
+            break;
         }
-		napms(1);		// sleep for 1ms
-
     }
 
 }
@@ -105,5 +110,7 @@ void writeThread(int fd){
 
 void screenThread(int fd){
     game = new Game(fd, role);
-    game->controller();
+    while(game->controller());
+	endwin();			// end curses mode
+    exit(0);
 }

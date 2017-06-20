@@ -3,6 +3,7 @@
 client::client(const char* ip, int portno){
     this->ip = strdup(ip);
     this->portno = portno;
+    this->restart = false;
     sockConf();
 }
 
@@ -32,10 +33,18 @@ void client::Close(){
 void client::cThread(client* c){
     printf("this is client thread\n");
     c->Connect();
+
+restart:
     thread r(readThread, c->sockfd);
     thread w(screenThread, c->sockfd);
     r.join();
-    w.join();
-    
-    c->Close();
+    if(c->restart){
+        w.detach();
+        c->restart = false;
+        goto restart;
+    } else {
+    	endwin();
+        w.detach();
+        c->Close();
+    }
 }

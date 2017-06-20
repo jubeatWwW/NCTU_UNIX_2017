@@ -16,12 +16,15 @@ static int cy = 3;
 class Game{
     public:
         Game(int sockfd, int role);
-        void controller();
+        bool controller();
         bool DropPiece(int x, int y);
+        bool CheckPiece();
         int sockfd;
         int curPlayer;
         int role;
+        bool gameover;
     private:
         void next();
         int _DropPiece(int x, int y);
+        bool _CheckPiece(int x, int y);
 };

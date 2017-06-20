@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#include "othello.h"
+
 extern void readThread(int fd);
 extern void writeThread(int fd);
 extern void screenThread(int fd);
@@ -23,6 +25,7 @@ class client{
         int sockfd;
         void Connect(void);
         void Close(void);
+        bool restart;
         static void cThread(client* c);
     private:   
         struct sockaddr_in servaddr;

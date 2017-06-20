@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#include "othello.h"
+
 extern void readThread(int fd);
 extern void screenThread(int fd);
 
@@ -21,6 +23,7 @@ class server{
         int newsockfd;
         void Accept(void);
         void Close(void);
+        bool restart;
         static void sThread(server* s);
     private:   
         int sockfd;

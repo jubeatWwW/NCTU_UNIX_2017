@@ -4,7 +4,8 @@ server::server(int portno){
     printf("act as server\n");
     
     this->portno = portno;
-    
+    this->restart = false;   
+
     sockConf();
     
 }
@@ -43,11 +44,18 @@ void server::Close(){
 void server::sThread(server *s){
     printf("this is server thread\n");
     s->Accept();
+restart:
     thread r(readThread, s->newsockfd);
     thread w(screenThread, s->newsockfd);
     r.join();
-    w.join();
-
-    s->Close();
+    if(s->restart){
+        w.detach();
+        s->restart = false;
+        goto restart;
+    } else {
+    	endwin();
+        w.detach();
+        s->Close();
+    }
 }
 

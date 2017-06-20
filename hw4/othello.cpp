@@ -119,7 +119,7 @@ draw_board() {
 	return;
 }
 
-void
+pair<int, int>
 draw_score() {
 	int i, j;
 	int black = 0, white = 0;
@@ -139,6 +139,6 @@ draw_score() {
 	addch(PLAYER2SYM|COLOR_PAIR(colorplayer2));
 	printw(" : %d", black);
 	attroff(A_BOLD);
-	return;
+	return make_pair(white, black);
 }
 
